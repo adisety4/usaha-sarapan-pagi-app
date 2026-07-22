@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit2, Trash2, Utensils } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Utensils, X, Save } from 'lucide-react';
 
 export default function MenuMakanan() {
   const navigate = useNavigate();
@@ -10,6 +10,63 @@ export default function MenuMakanan() {
     { id: 3, nama: 'Bubur Ayam', harga: 10000, stokAwal: 40 },
   ]);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  
+  const [formData, setFormData] = useState({
+    nama: '',
+    harga: '',
+    stokAwal: ''
+  });
+
+  const handleOpenModal = (menu = null) => {
+    if (menu) {
+      setEditingId(menu.id);
+      setFormData({
+        nama: menu.nama,
+        harga: menu.harga,
+        stokAwal: menu.stokAwal
+      });
+    } else {
+      setEditingId(null);
+      setFormData({ nama: '', harga: '', stokAwal: '' });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData({ nama: '', harga: '', stokAwal: '' });
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (editingId) {
+      setMenus(menus.map(m => m.id === editingId ? { 
+        ...m, 
+        nama: formData.nama, 
+        harga: parseInt(formData.harga), 
+        stokAwal: parseInt(formData.stokAwal) 
+      } : m));
+    } else {
+      const newMenu = {
+        id: Date.now(),
+        nama: formData.nama,
+        harga: parseInt(formData.harga),
+        stokAwal: parseInt(formData.stokAwal)
+      };
+      setMenus([...menus, newMenu]);
+    }
+    handleCloseModal();
+  };
+
+  const handleDelete = (id) => {
+    if(window.confirm('Apakah Anda yakin ingin menghapus menu ini?')) {
+      setMenus(menus.filter(m => m.id !== id));
+    }
+  };
+
   return (
     <div className="animate-fade-in pb-10">
       <button onClick={() => navigate(-1)} className="flex items-center text-primary font-semibold mb-6">
@@ -18,7 +75,10 @@ export default function MenuMakanan() {
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Daftar Menu</h2>
-        <button className="bg-primary text-white p-2 rounded-xl hover:bg-primaryDark transition-colors shadow-sm">
+        <button 
+          onClick={() => handleOpenModal()} 
+          className="bg-primary text-white p-2 rounded-xl hover:bg-primaryDark transition-colors shadow-sm"
+        >
           <Plus className="w-5 h-5" />
         </button>
       </div>
@@ -38,10 +98,16 @@ export default function MenuMakanan() {
             </div>
             
             <div className="flex gap-2">
-              <button className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <button 
+                onClick={() => handleOpenModal(menu)}
+                className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
                 <Edit2 className="w-4 h-4" />
               </button>
-              <button className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+              <button 
+                onClick={() => handleDelete(menu.id)}
+                className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -57,6 +123,64 @@ export default function MenuMakanan() {
           </div>
         )}
       </div>
+
+      {/* Modal Form */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-end sm:items-center animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl transform transition-transform animate-slide-up sm:animate-fade-in">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-bold text-slate-800">
+                {editingId ? 'Edit Menu' : 'Tambah Menu Baru'}
+              </h3>
+              <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSave} className="space-y-4">
+              <div>
+                <label className="label-text">Nama Menu</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="input-field" 
+                  placeholder="Contoh: Nasi Uduk"
+                  value={formData.nama}
+                  onChange={(e) => setFormData({...formData, nama: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="label-text">Harga (Rp)</label>
+                <input 
+                  type="number" 
+                  required 
+                  className="input-field" 
+                  placeholder="Contoh: 15000"
+                  value={formData.harga}
+                  onChange={(e) => setFormData({...formData, harga: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="label-text">Stok Default (Porsi)</label>
+                <input 
+                  type="number" 
+                  required 
+                  className="input-field" 
+                  placeholder="Contoh: 30"
+                  value={formData.stokAwal}
+                  onChange={(e) => setFormData({...formData, stokAwal: e.target.value})}
+                />
+              </div>
+              
+              <button type="submit" className="btn-primary w-full mt-4 flex justify-center items-center">
+                <Save className="w-5 h-5 mr-2" /> Simpan Menu
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
