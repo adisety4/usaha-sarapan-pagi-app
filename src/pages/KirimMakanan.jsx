@@ -1,0 +1,147 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, Trash2, Camera, UploadCloud } from 'lucide-react';
+import Spinner from '../components/Spinner';
+
+export default function KirimMakanan() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    tanggal: new Date().toISOString().split('T')[0],
+    mitra: '',
+    lapak: '',
+    fotoBase64: ''
+  });
+
+  const [menus, setMenus] = useState([{ id: Date.now(), namaMenu: '', qty: '' }]);
+
+  const handleMenuChange = (id, field, value) => {
+    setMenus(menus.map(m => m.id === id ? { ...m, [field]: value } : m));
+  };
+
+  const addMenu = () => {
+    setMenus([...menus, { id: Date.now(), namaMenu: '', qty: '' }]);
+  };
+
+  const removeMenu = (id) => {
+    if (menus.length > 1) {
+      setMenus(menus.filter(m => m.id !== id));
+    }
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, fotoBase64: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Simulate API Call to Google Sheets
+    try {
+      // In production, this posts to Google Apps Script endpoint
+      // const payload = { ...formData, menus, jenisData: 'KIRIM' };
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setSuccess(true);
+      setTimeout(() => navigate('/'), 2000);
+    } catch (error) {
+      alert("Terjadi kesalahan.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-slate-800">Berhasil Disimpan!</h2>
+        <p className="text-slate-500 mt-2 text-center">Data penitipan makanan berhasil dikirim.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fade-in pb-10">
+      <button onClick={() => navigate(-1)} className="flex items-center text-primary font-semibold mb-6">
+        <ArrowLeft className="w-5 h-5 mr-1" /> Kembali
+      </button>
+
+      <h2 className="text-2xl font-bold text-slate-800 mb-6">Kirim Makanan</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="card">
+          <label className="label-text">Tanggal</label>
+          <input type="date" required className="input-field mb-4" value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} />
+          
+          <label className="label-text">Nama Mitra / Owner</label>
+          <input type="text" required placeholder="Contoh: Budi" className="input-field mb-4" value={formData.mitra} onChange={(e) => setFormData({...formData, mitra: e.target.value})} />
+          
+          <label className="label-text">Nama Lapak</label>
+          <input type="text" required placeholder="Contoh: Lapak Jamur" className="input-field" value={formData.lapak} onChange={(e) => setFormData({...formData, lapak: e.target.value})} />
+        </div>
+
+        <div className="card">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-700">Daftar Menu</h3>
+            <button type="button" onClick={addMenu} className="text-sm bg-teal-50 text-primary px-3 py-1.5 rounded-lg font-semibold flex items-center">
+              <Plus className="w-4 h-4 mr-1"/> Tambah
+            </button>
+          </div>
+          
+          {menus.map((menu, index) => (
+            <div key={menu.id} className="flex gap-2 mb-3 items-start">
+              <div className="flex-1">
+                <input type="text" required placeholder="Nama Menu" className="input-field" value={menu.namaMenu} onChange={(e) => handleMenuChange(menu.id, 'namaMenu', e.target.value)} />
+              </div>
+              <div className="w-24">
+                <input type="number" required min="1" placeholder="Qty" className="input-field" value={menu.qty} onChange={(e) => handleMenuChange(menu.id, 'qty', e.target.value)} />
+              </div>
+              {menus.length > 1 && (
+                <button type="button" onClick={() => removeMenu(menu.id)} className="p-3 text-red-500 bg-red-50 rounded-xl hover:bg-red-100">
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="card">
+          <h3 className="font-bold text-slate-700 mb-2">Foto Catatan (Opsional)</h3>
+          <p className="text-xs text-slate-500 mb-4">Upload foto fisik lembar catatan penitipan</p>
+          
+          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              {formData.fotoBase64 ? (
+                <img src={formData.fotoBase64} alt="Preview" className="h-24 object-contain rounded" />
+              ) : (
+                <>
+                  <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 font-medium">Ambil / Upload Foto</p>
+                </>
+              )}
+            </div>
+            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
+          </label>
+        </div>
+
+        <button type="submit" disabled={loading} className="btn-primary mt-6">
+          {loading ? <Spinner /> : <><UploadCloud className="w-5 h-5"/> Simpan Data</>}
+        </button>
+      </form>
+    </div>
+  );
+}
