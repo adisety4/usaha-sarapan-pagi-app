@@ -134,7 +134,7 @@ export default function KirimMakanan() {
                 </>
               )}
             </div>
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
+            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
           </label>
         </div>
 
