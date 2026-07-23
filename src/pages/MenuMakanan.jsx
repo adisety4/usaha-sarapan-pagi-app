@@ -43,6 +43,7 @@ export default function MenuMakanan() {
   const handleSave = (e) => {
     e.preventDefault();
     if (editingId) {
+      // Edit existing menu
       setMenus(menus.map(m => m.id === editingId ? { 
         ...m, 
         nama: formData.nama, 
@@ -50,8 +51,9 @@ export default function MenuMakanan() {
         stokAwal: parseInt(formData.stokAwal) 
       } : m));
     } else {
+      // Add new menu
       const newMenu = {
-        id: Date.now(),
+        id: Date.now(), // Generate unique ID
         nama: formData.nama,
         harga: parseInt(formData.harga),
         stokAwal: parseInt(formData.stokAwal)
