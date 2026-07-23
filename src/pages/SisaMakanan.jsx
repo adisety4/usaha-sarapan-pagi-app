@@ -3,6 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Camera, UploadCloud } from 'lucide-react';
 import Spinner from '../components/Spinner';
 
+const LAPAK_OPTIONS = [
+  "Lapak Pak Dwi Citra Garden",
+  "Lapak Bang Iwan Merpati/UPJ",
+  "Lapak Jamur/ Sotomie",
+  "Lapak Rina Tenda Kuning",
+  "Lapak Bang Iwan Menjangan",
+  "Lapak Bang iwan Lama BXC",
+  "Lapak Amel",
+  "Lapak Pak Dwi Stasiun Jurang Mangu",
+  "Lapak Pak Dwi Pasmod",
+  "Lapak pak Dwi Villa Bintaro",
+  "Lapak Jombang 2",
+  "Lapak Uti Pasmod"
+];
+
 export default function SisaMakanan() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -10,7 +25,8 @@ export default function SisaMakanan() {
   
   const [formData, setFormData] = useState({
     tanggal: new Date().toISOString().split('T')[0],
-    lapak: '',
+    lapak: LAPAK_OPTIONS[0],
+    lapakLainnya: '', // Jika lapak 'other'
     fotoBase64: ''
   });
 
@@ -45,11 +61,13 @@ export default function SisaMakanan() {
     e.preventDefault();
     setLoading(true);
     
+    const finalLapak = formData.lapak === 'other' ? formData.lapakLainnya : formData.lapak;
+    
     try {
       const payload = {
         action: 'sisa',
         tanggal: formData.tanggal,
-        lapak: formData.lapak,
+        lapak: finalLapak,
         menus: menus
       };
       
@@ -100,7 +118,22 @@ export default function SisaMakanan() {
           <input type="date" required className="input-field mb-4" value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} />
           
           <label className="label-text">Nama Lapak</label>
-          <input type="text" required placeholder="Contoh: Lapak Jamur" className="input-field" value={formData.lapak} onChange={(e) => setFormData({...formData, lapak: e.target.value})} />
+          <select 
+            className="input-field bg-white mb-2" 
+            value={formData.lapak} 
+            onChange={(e) => setFormData({...formData, lapak: e.target.value})}
+          >
+            {LAPAK_OPTIONS.map((lapakName, i) => (
+              <option key={i} value={lapakName}>{lapakName}</option>
+            ))}
+            <option value="other">Lainnya (Ketik Manual...)</option>
+          </select>
+          
+          {formData.lapak === 'other' && (
+            <div className="mt-2 animate-fade-in">
+              <input type="text" required placeholder="Ketik nama lapak baru..." className="input-field border-orange-300 focus:ring-orange-500" value={formData.lapakLainnya} onChange={(e) => setFormData({...formData, lapakLainnya: e.target.value})} />
+            </div>
+          )}
         </div>
 
         <div className="card">

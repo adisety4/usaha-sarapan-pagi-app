@@ -3,6 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Camera, UploadCloud } from 'lucide-react';
 import Spinner from '../components/Spinner';
 
+const LAPAK_OPTIONS = [
+  "Lapak Pak Dwi Citra Garden",
+  "Lapak Bang Iwan Merpati/UPJ",
+  "Lapak Jamur/ Sotomie",
+  "Lapak Rina Tenda Kuning",
+  "Lapak Bang Iwan Menjangan",
+  "Lapak Bang iwan Lama BXC",
+  "Lapak Amel",
+  "Lapak Pak Dwi Stasiun Jurang Mangu",
+  "Lapak Pak Dwi Pasmod",
+  "Lapak pak Dwi Villa Bintaro",
+  "Lapak Jombang 2",
+  "Lapak Uti Pasmod"
+];
+
+const HARGA_OPTIONS = [
+  "9000",
+  "8500"
+];
+
 export default function KirimMakanan() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -11,18 +31,21 @@ export default function KirimMakanan() {
   const [formData, setFormData] = useState({
     tanggal: new Date().toISOString().split('T')[0],
     mitra: '',
-    lapak: '',
+    lapak: LAPAK_OPTIONS[0],
+    lapakLainnya: '', // Jika lapak 'other'
     fotoBase64: ''
   });
 
-  const [menus, setMenus] = useState([{ id: Date.now(), namaMenu: '', qty: '' }]);
+  const [menus, setMenus] = useState([
+    { id: Date.now(), namaMenu: '', qty: '', harga: HARGA_OPTIONS[0], hargaLainnya: '' }
+  ]);
 
   const handleMenuChange = (id, field, value) => {
     setMenus(menus.map(m => m.id === id ? { ...m, [field]: value } : m));
   };
 
   const addMenu = () => {
-    setMenus([...menus, { id: Date.now(), namaMenu: '', qty: '' }]);
+    setMenus([...menus, { id: Date.now(), namaMenu: '', qty: '', harga: HARGA_OPTIONS[0], hargaLainnya: '' }]);
   };
 
   const removeMenu = (id) => {
@@ -46,13 +69,23 @@ export default function KirimMakanan() {
     e.preventDefault();
     setLoading(true);
     
+    // Tentukan nilai final yang akan dikirim (apakah dari dropdown atau isian manual 'other')
+    const finalLapak = formData.lapak === 'other' ? formData.lapakLainnya : formData.lapak;
+    
+    // Format menus agar mengambil harga final
+    const finalMenus = menus.map(m => ({
+      namaMenu: m.namaMenu,
+      qty: m.qty,
+      harga: m.harga === 'other' ? m.hargaLainnya : m.harga
+    }));
+    
     try {
       const payload = {
         action: 'kirim',
         tanggal: formData.tanggal,
         mitra: formData.mitra,
-        lapak: formData.lapak,
-        menus: menus
+        lapak: finalLapak,
+        menus: finalMenus
       };
       
       const response = await fetch("https://script.google.com/macros/s/AKfycbwfjwjifyQNhC8epwW-5HnlleB9dHwHiL-pWbRvtUMBHAoeNSD6KkKHumxWqO764Oif/exec", {
@@ -105,7 +138,22 @@ export default function KirimMakanan() {
           <input type="text" required placeholder="Contoh: Budi" className="input-field mb-4" value={formData.mitra} onChange={(e) => setFormData({...formData, mitra: e.target.value})} />
           
           <label className="label-text">Nama Lapak</label>
-          <input type="text" required placeholder="Contoh: Lapak Jamur" className="input-field" value={formData.lapak} onChange={(e) => setFormData({...formData, lapak: e.target.value})} />
+          <select 
+            className="input-field bg-white mb-2" 
+            value={formData.lapak} 
+            onChange={(e) => setFormData({...formData, lapak: e.target.value})}
+          >
+            {LAPAK_OPTIONS.map((lapakName, i) => (
+              <option key={i} value={lapakName}>{lapakName}</option>
+            ))}
+            <option value="other">Lainnya (Ketik Manual...)</option>
+          </select>
+          
+          {formData.lapak === 'other' && (
+            <div className="mt-2 animate-fade-in">
+              <input type="text" required placeholder="Ketik nama lapak baru..." className="input-field border-orange-300 focus:ring-orange-500" value={formData.lapakLainnya} onChange={(e) => setFormData({...formData, lapakLainnya: e.target.value})} />
+            </div>
+          )}
         </div>
 
         <div className="card">
@@ -117,17 +165,46 @@ export default function KirimMakanan() {
           </div>
           
           {menus.map((menu, index) => (
-            <div key={menu.id} className="flex gap-2 mb-3 items-start">
-              <div className="flex-1">
-                <input type="text" required placeholder="Nama Menu" className="input-field" value={menu.namaMenu} onChange={(e) => handleMenuChange(menu.id, 'namaMenu', e.target.value)} />
+            <div key={menu.id} className="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-semibold text-slate-600 text-sm">Menu #{index + 1}</span>
+                {menus.length > 1 && (
+                  <button type="button" onClick={() => removeMenu(menu.id)} className="text-red-500 hover:text-red-700 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-              <div className="w-24">
-                <input type="number" required min="1" placeholder="Qty" className="input-field" value={menu.qty} onChange={(e) => handleMenuChange(menu.id, 'qty', e.target.value)} />
+              
+              <div className="mb-3">
+                <label className="label-text text-xs">Nama Menu</label>
+                <input type="text" required placeholder="Contoh: Nasi Kuning" className="input-field" value={menu.namaMenu} onChange={(e) => handleMenuChange(menu.id, 'namaMenu', e.target.value)} />
               </div>
-              {menus.length > 1 && (
-                <button type="button" onClick={() => removeMenu(menu.id)} className="p-3 text-red-500 bg-red-50 rounded-xl hover:bg-red-100">
-                  <Trash2 className="w-5 h-5" />
-                </button>
+              
+              <div className="flex gap-3">
+                <div className="w-1/3">
+                  <label className="label-text text-xs">Qty</label>
+                  <input type="number" required min="1" placeholder="10" className="input-field" value={menu.qty} onChange={(e) => handleMenuChange(menu.id, 'qty', e.target.value)} />
+                </div>
+                <div className="w-2/3">
+                  <label className="label-text text-xs">Harga Satuan</label>
+                  <select 
+                    className="input-field bg-white" 
+                    value={menu.harga} 
+                    onChange={(e) => handleMenuChange(menu.id, 'harga', e.target.value)}
+                  >
+                    {HARGA_OPTIONS.map((h, i) => (
+                      <option key={i} value={h}>Rp {h}</option>
+                    ))}
+                    <option value="other">Lainnya...</option>
+                  </select>
+                </div>
+              </div>
+              
+              {menu.harga === 'other' && (
+                <div className="mt-3 animate-fade-in">
+                  <label className="label-text text-xs text-orange-600">Ketik Harga Manual (Angka Saja)</label>
+                  <input type="number" required placeholder="Contoh: 15000" className="input-field border-orange-200" value={menu.hargaLainnya} onChange={(e) => handleMenuChange(menu.id, 'hargaLainnya', e.target.value)} />
+                </div>
               )}
             </div>
           ))}
