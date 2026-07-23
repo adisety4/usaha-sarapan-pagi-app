@@ -27,7 +27,7 @@ const LAPAK_OPTIONS = [
 
 export default function RencanaProduksi() {
   const navigate = useNavigate();
-  const printRef = useRef(null);
+  const hiddenPrintRef = useRef(null);
 
   // Set default besok
   const besok = new Date();
@@ -107,21 +107,36 @@ export default function RencanaProduksi() {
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  const downloadGambar = async () => {
-    if (printRef.current) {
-      // Sembunyikan elemen-elemen tombol saat difoto
-      const elementsToHide = document.querySelectorAll('.no-print');
-      elementsToHide.forEach(el => el.style.display = 'none');
+  const getGrandTotal = () => {
+    const totals = {};
+    lapaks.forEach(lapak => {
+      lapak.menus.forEach(menu => {
+        if (menu.namaMenu.trim() !== '' && menu.qty) {
+          const name = menu.namaMenu.trim();
+          const qty = parseInt(menu.qty) || 0;
+          if (totals[name]) {
+            totals[name] += qty;
+          } else {
+            totals[name] = qty;
+          }
+        }
+      });
+    });
+    return totals;
+  };
 
-      // Tampilkan header
-      const headerToDisplay = document.querySelector('.print-header');
-      if (headerToDisplay) headerToDisplay.classList.remove('hidden');
+  const downloadGambar = async () => {
+    if (hiddenPrintRef.current) {
+      // Tampilkan sementara div yang disembunyikan untuk difoto
+      const printElement = hiddenPrintRef.current;
+      printElement.style.display = 'block';
 
       try {
-        const canvas = await html2canvas(printRef.current, { 
-          scale: 2, // Kualitas HD
-          backgroundColor: '#f8fafc', // Warna background slate-50
-          useCORS: true
+        const canvas = await html2canvas(printElement, { 
+          scale: 2, // Kualitas HD tapi teks tidak kepotong
+          backgroundColor: '#ffffff', 
+          useCORS: true,
+          windowWidth: 600 // Kunci lebar canvas agar tidak terlalu besar
         });
         
         const image = canvas.toDataURL("image/jpeg", 0.9);
@@ -132,9 +147,8 @@ export default function RencanaProduksi() {
       } catch (err) {
         alert("Gagal membuat gambar: " + err);
       } finally {
-        // Kembalikan tombol-tombol yang disembunyikan
-        elementsToHide.forEach(el => el.style.display = '');
-        if (headerToDisplay) headerToDisplay.classList.add('hidden');
+        // Sembunyikan kembali
+        printElement.style.display = 'none';
       }
     }
   };
@@ -161,13 +175,8 @@ export default function RencanaProduksi() {
         />
       </div>
 
-      {/* Area yang akan difoto (didownload) */}
-      <div ref={printRef} className="space-y-4 p-4 -mx-2 bg-slate-50 rounded-xl" id="print-area">
-        {/* Header untuk Foto */}
-        <div className="text-center mb-6 pb-4 border-b-2 border-dashed border-slate-300 print-header hidden">
-          <h2 className="text-2xl font-bold text-slate-800">Rencana Distribusi Menu</h2>
-          <p className="text-md text-slate-600 font-semibold mt-1">Tanggal: {tanggal}</p>
-        </div>
+      {/* Area Input (Tidak akan difoto) */}
+      <div className="space-y-4 p-4 -mx-2 bg-slate-50 rounded-xl">
 
         {lapaks.map((lapak, index) => (
           <div key={lapak.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
@@ -282,6 +291,64 @@ export default function RencanaProduksi() {
         >
           <Download className="w-6 h-6 mr-2" /> Download JPG
         </button>
+      </div>
+
+      {/* HIDDEN PRINT VIEW: Format khusus agar teks tidak terpotong & tampilan nota bersih */}
+      <div 
+        ref={hiddenPrintRef} 
+        style={{ display: 'none', width: '600px', padding: '30px', color: '#1e293b' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '25px', paddingBottom: '15px', borderBottom: '2px dashed #cbd5e1' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 5px 0' }}>Rencana Distribusi Menu</h2>
+          <p style={{ fontSize: '16px', color: '#475569', margin: 0 }}>Tanggal: {tanggal}</p>
+        </div>
+
+        {lapaks.map((lapak, index) => {
+          const finalMitra = lapak.mitra === 'Lainnya...' ? lapak.mitraLainnya : lapak.mitra;
+          const finalLapak = lapak.namaLapak === 'other' ? lapak.lapakLainnya : lapak.namaLapak;
+          // Hanya render lapak jika ada namanya
+          if (!finalLapak) return null;
+
+          return (
+            <div key={lapak.id} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #e2e8f0' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#64748b' }}>Mitra: <strong>{finalMitra || '-'}</strong></p>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#0f172a' }}>{finalLapak}</h3>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {lapak.menus.map((menu, idx) => {
+                  if (!menu.namaMenu) return null;
+                  return (
+                    <div key={menu.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', padding: '4px 0' }}>
+                      <span>{menu.namaMenu}</span>
+                      <strong style={{ fontSize: '18px' }}>{menu.qty || 0}</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* GRAND TOTAL SECTION */}
+        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '3px solid #0f172a' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '15px', textAlign: 'center', color: '#0f172a' }}>
+            REKAPITULASI TOTAL (GRAND TOTAL)
+          </h3>
+          <div style={{ backgroundColor: '#f1f5f9', padding: '20px', borderRadius: '12px' }}>
+            {Object.keys(getGrandTotal()).length > 0 ? (
+              Object.entries(getGrandTotal()).map(([menuName, totalQty], idx) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0', fontSize: '18px' }}>
+                  <span style={{ fontWeight: '600' }}>{menuName}</span>
+                  <span style={{ fontWeight: '900', color: '#0f172a' }}>{totalQty} porsi</span>
+                </div>
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', margin: 0, color: '#64748b' }}>Belum ada menu yang diinput.</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
