@@ -66,7 +66,23 @@ export default function KirimMakanan() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, fotoBase64: reader.result });
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          // Skala gambar menjadi max lebar 600px agar sangat ringan
+          const MAX_WIDTH = 600; 
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Kompresi JPEG kualitas 40% agar ukuran file (MB) menjadi sangat kecil
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.4);
+          setFormData({ ...formData, fotoBase64: compressedBase64 });
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -93,7 +109,8 @@ export default function KirimMakanan() {
         tanggal: formData.tanggal,
         mitra: finalMitra,
         lapak: finalLapak,
-        menus: finalMenus
+        menus: finalMenus,
+        fotoBase64: formData.fotoBase64
       };
       
       const response = await fetch("https://script.google.com/macros/s/AKfycbwfjwjifyQNhC8epwW-5HnlleB9dHwHiL-pWbRvtUMBHAoeNSD6KkKHumxWqO764Oif/exec", {
