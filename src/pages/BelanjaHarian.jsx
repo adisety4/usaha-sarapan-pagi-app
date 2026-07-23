@@ -31,11 +31,28 @@ export default function BelanjaHarian() {
     setLoading(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setSuccess(true);
-      setTimeout(() => navigate('/'), 2000);
+      const payload = {
+        action: 'belanja',
+        tanggal: formData.tanggal,
+        keterangan: formData.namaBarang,
+        jenisBelanja: formData.kategori,
+        nominal: formData.total
+      };
+      
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwfjwjifyQNhC8epwW-5HnlleB9dHwHiL-pWbRvtUMBHAoeNSD6KkKHumxWqO764Oif/exec", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      if (result.status === "success") {
+        setSuccess(true);
+        setTimeout(() => navigate('/'), 2000);
+      } else {
+        alert("Gagal menyimpan data: " + result.message);
+      }
     } catch (error) {
-      alert("Terjadi kesalahan.");
+      alert("Terjadi kesalahan koneksi ke Google Sheets.");
     } finally {
       setLoading(false);
     }
