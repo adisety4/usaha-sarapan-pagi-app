@@ -4,14 +4,14 @@
 
 @layer base {
   body {
-    @apply bg-background text-slate-800 antialiased font-sans selection:bg-primary/30;
+    @apply bg-background text-slate-800 antialiased font-sans;
   }
 }
 
 @layer components {
   /* Premium App Container */
   .app-container {
-    @apply min-h-screen max-w-md mx-auto shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] bg-slate-50 relative overflow-x-hidden pb-12;
+    @apply min-h-screen max-w-md mx-auto shadow-2xl bg-slate-50 relative overflow-x-hidden pb-12;
   }
 
   /* Glassmorphism Header */
@@ -21,16 +21,16 @@
 
   /* Buttons */
   .btn-primary {
-    @apply w-full bg-primary hover:bg-primaryDark text-white font-bold py-3.5 px-6 rounded-2xl shadow-glow hover:shadow-lg transition-all duration-300 transform active:scale-95 focus:ring-4 focus:ring-primary/30 flex justify-center items-center gap-2 relative overflow-hidden;
+    @apply w-full bg-primary hover:bg-primaryDark text-white font-bold py-3 px-6 rounded-2xl shadow-glow hover:shadow-lg transition-all duration-300 transform active:scale-95 flex justify-center items-center gap-2;
   }
   
   /* Input fields */
   .input-field {
-    @apply w-full border border-slate-200 bg-slate-50/50 hover:bg-white rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-white transition-all duration-200 shadow-sm;
+    @apply w-full border border-slate-200 bg-white rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 shadow-sm;
   }
   
   .label-text {
-    @apply block text-sm font-bold text-slate-700 mb-1.5 ml-1 tracking-wide;
+    @apply block text-sm font-bold text-slate-700 mb-1 ml-1 tracking-wide;
   }
 
   /* Premium Cards */
@@ -40,9 +40,10 @@
   
   /* Feature Grid Item */
   .feature-card {
-    @apply card flex items-center gap-5 cursor-pointer active:scale-[0.97] group relative overflow-hidden;
+    @apply bg-white rounded-2xl p-5 shadow-soft hover:shadow-md border border-slate-100 flex items-center gap-5 cursor-pointer active:scale-95 relative overflow-hidden transition-all duration-300;
   }
+  
   .feature-icon-wrapper {
-    @apply p-4 rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm;
+    @apply p-4 rounded-2xl shadow-sm transition-all duration-300;
   }
 }

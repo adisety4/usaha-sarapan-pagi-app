@@ -17,7 +17,7 @@ export default function Dashboard() {
 
       <div className="grid gap-5">
         <Link to="/kirim" className="block outline-none">
-          <div className="feature-card">
+          <div className="feature-card group">
             <div className="feature-icon-wrapper bg-gradient-to-br from-teal-400 to-emerald-500 text-white">
               <Send className="w-7 h-7" />
             </div>
@@ -32,7 +32,7 @@ export default function Dashboard() {
         </Link>
 
         <Link to="/sisa" className="block outline-none">
-          <div className="feature-card">
+          <div className="feature-card group">
             <div className="feature-icon-wrapper bg-gradient-to-br from-orange-400 to-rose-500 text-white">
               <UtensilsCrossed className="w-7 h-7" />
             </div>
@@ -47,7 +47,7 @@ export default function Dashboard() {
         </Link>
 
         <Link to="/belanja" className="block outline-none">
-          <div className="feature-card">
+          <div className="feature-card group">
             <div className="feature-icon-wrapper bg-gradient-to-br from-blue-400 to-indigo-600 text-white">
               <ShoppingCart className="w-7 h-7" />
             </div>
@@ -62,7 +62,7 @@ export default function Dashboard() {
         </Link>
 
         <Link to="/menu" className="block outline-none mt-2">
-          <div className="feature-card">
+          <div className="feature-card group">
             <div className="feature-icon-wrapper bg-gradient-to-br from-violet-400 to-fuchsia-500 text-white">
               <ClipboardList className="w-7 h-7" />
             </div>
