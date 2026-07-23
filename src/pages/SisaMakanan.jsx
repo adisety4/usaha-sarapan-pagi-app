@@ -127,7 +127,7 @@ export default function SisaMakanan() {
                 </>
               )}
             </div>
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
+            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
           </label>
         </div>
 
