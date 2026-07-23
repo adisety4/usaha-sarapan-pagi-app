@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Camera, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Camera, UploadCloud, Image as ImageIcon, Folder } from 'lucide-react';
 import Spinner from '../components/Spinner';
+
+const MITRA_OPTIONS = [
+  "Mia",
+  "Sunarsih",
+  "Lainnya..."
+];
 
 const LAPAK_OPTIONS = [
   "Lapak Pak Dwi Citra Garden",
@@ -30,7 +36,8 @@ export default function KirimMakanan() {
   
   const [formData, setFormData] = useState({
     tanggal: new Date().toISOString().split('T')[0],
-    mitra: '',
+    mitra: MITRA_OPTIONS[0],
+    mitraLainnya: '',
     lapak: LAPAK_OPTIONS[0],
     lapakLainnya: '', // Jika lapak 'other'
     fotoBase64: ''
@@ -71,6 +78,7 @@ export default function KirimMakanan() {
     
     // Tentukan nilai final yang akan dikirim (apakah dari dropdown atau isian manual 'other')
     const finalLapak = formData.lapak === 'other' ? formData.lapakLainnya : formData.lapak;
+    const finalMitra = formData.mitra === 'Lainnya...' ? formData.mitraLainnya : formData.mitra;
     
     // Format menus agar mengambil harga final
     const finalMenus = menus.map(m => ({
@@ -83,7 +91,7 @@ export default function KirimMakanan() {
       const payload = {
         action: 'kirim',
         tanggal: formData.tanggal,
-        mitra: formData.mitra,
+        mitra: finalMitra,
         lapak: finalLapak,
         menus: finalMenus
       };
@@ -135,7 +143,20 @@ export default function KirimMakanan() {
           <input type="date" required className="input-field mb-4" value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} />
           
           <label className="label-text">Nama Mitra / Owner</label>
-          <input type="text" required placeholder="Contoh: Budi" className="input-field mb-4" value={formData.mitra} onChange={(e) => setFormData({...formData, mitra: e.target.value})} />
+          <select 
+            className="input-field bg-white mb-2" 
+            value={formData.mitra} 
+            onChange={(e) => setFormData({...formData, mitra: e.target.value})}
+          >
+            {MITRA_OPTIONS.map((m, i) => (
+              <option key={i} value={m}>{m}</option>
+            ))}
+          </select>
+          {formData.mitra === 'Lainnya...' && (
+            <div className="mt-2 mb-4 animate-fade-in">
+              <input type="text" required placeholder="Ketik nama mitra..." className="input-field border-indigo-300 focus:ring-indigo-500" value={formData.mitraLainnya} onChange={(e) => setFormData({...formData, mitraLainnya: e.target.value})} />
+            </div>
+          )}
           
           <label className="label-text">Nama Lapak</label>
           <select 
@@ -214,19 +235,32 @@ export default function KirimMakanan() {
           <h3 className="font-bold text-slate-700 mb-2">Foto Catatan (Opsional)</h3>
           <p className="text-xs text-slate-500 mb-4">Upload foto fisik lembar catatan penitipan</p>
           
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              {formData.fotoBase64 ? (
-                <img src={formData.fotoBase64} alt="Preview" className="h-24 object-contain rounded" />
-              ) : (
-                <>
-                  <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500 font-medium">Ambil / Upload Foto</p>
-                </>
-              )}
+          {formData.fotoBase64 ? (
+             <div className="relative mb-4">
+               <img src={formData.fotoBase64} alt="Preview" className="w-full h-40 object-contain rounded-xl border border-gray-200 bg-gray-50" />
+               <button type="button" onClick={() => setFormData({...formData, fotoBase64: ''})} className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600">
+                 <Trash2 className="w-4 h-4" />
+               </button>
+             </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-indigo-200 rounded-xl cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                <Camera className="w-6 h-6 text-indigo-500 mb-1" />
+                <span className="text-[10px] font-semibold text-indigo-700">Kamera</span>
+                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
+              </label>
+              <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-emerald-200 rounded-xl cursor-pointer bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                <ImageIcon className="w-6 h-6 text-emerald-500 mb-1" />
+                <span className="text-[10px] font-semibold text-emerald-700">Galeri Foto</span>
+                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+              </label>
+              <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-amber-200 rounded-xl cursor-pointer bg-amber-50 hover:bg-amber-100 transition-colors">
+                <Folder className="w-6 h-6 text-amber-500 mb-1" />
+                <span className="text-[10px] font-semibold text-amber-700">File Saya</span>
+                <input type="file" className="hidden" onChange={handlePhotoUpload} />
+              </label>
             </div>
-            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-          </label>
+          )}
         </div>
 
         <button type="submit" disabled={loading} className="btn-primary mt-6">
