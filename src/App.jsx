@@ -4,6 +4,7 @@ import KirimMakanan from './pages/KirimMakanan';
 import SisaMakanan from './pages/SisaMakanan';
 import BelanjaHarian from './pages/BelanjaHarian';
 import MenuMakanan from './pages/MenuMakanan';
+import RencanaProduksi from './pages/RencanaProduksi';
 import { Sparkles } from 'lucide-react';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="/sisa" element={<SisaMakanan />} />
             <Route path="/belanja" element={<BelanjaHarian />} />
             <Route path="/menu" element={<MenuMakanan />} />
+            <Route path="/rencana" element={<RencanaProduksi />} />
           </Routes>
         </main>
       </div>

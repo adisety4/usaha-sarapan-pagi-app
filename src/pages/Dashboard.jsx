@@ -16,6 +16,21 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-5">
+        <Link to="/rencana" className="block outline-none">
+          <div className="feature-card group">
+            <div className="feature-icon-wrapper bg-gradient-to-br from-purple-500 to-pink-600 text-white">
+              <ClipboardList className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-lg text-slate-800">Rencana Produksi</h3>
+              <p className="text-sm text-slate-500 font-medium mt-0.5">Buat daftar menu harian</p>
+            </div>
+            <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-slate-300">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </div>
+        </Link>
+
         <Link to="/kirim" className="block outline-none">
           <div className="feature-card group">
             <div className="feature-icon-wrapper bg-gradient-to-br from-teal-400 to-emerald-500 text-white">
